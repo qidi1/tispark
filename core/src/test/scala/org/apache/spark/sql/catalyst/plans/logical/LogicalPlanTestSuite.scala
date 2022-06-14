@@ -204,14 +204,14 @@ class LogicalPlanTestSuite extends BasePlanTest {
           KeyUtils.formatBytesUTF8(RowKey.createBeyondMax(tableId).getBytes)),
         List[String]("0", "9223372036854775807", "9223372036854775808", "18446744073709551615")))
 
-    situations.foreach((situation) => {
+    situations.foreach(situation => {
       val sql = situation._1
       val rangeExpection = situation._2.head
       val valueExpectation = situation._2(1)
       val df = spark.sql(sql)
       val value = df.collect()
       val range = extractDAGRequests(df).head.getRangesMaps.get(tableId)
-      for (x <- 0 until (range.size())) {
+      for (x <- 0 until range.size()) {
         val startKey = KeyUtils.formatBytesUTF8(range.get(x).getStart.toByteArray)
         val endKey = KeyUtils.formatBytesUTF8(range.get(x).getEnd.toByteArray)
         assert(startKey.equals(rangeExpection(2 * x)))
@@ -252,13 +252,11 @@ class LogicalPlanTestSuite extends BasePlanTest {
       " INSERT INTO t1 VALUES(0, 'aa', 'aa'), ( 9223372036854775807, 'bb', 'bb'), ( 9223372036854775808, 'cc', 'cc'), ( 18446744073709551615, 'dd', 'dd')")
     tidbStmt.execute(
       " INSERT INTO t2 VALUES(0, 'aa', 'aa'), ( 9223372036854775807, 'bb', 'bb'), ( 9223372036854775808, 'cc', 'cc'), ( 18446744073709551615, 'dd', 'dd')")
-    tidbStmt.execute(
-      " INSERT INTO t3 VALUES(0, 'aa', 'aa'), (1, 'bb', 'bb')")
+    tidbStmt.execute(" INSERT INTO t3 VALUES(0, 'aa', 'aa'), (1, 'bb', 'bb')")
     tidbStmt.execute("split table t2 between (0) and (9223888888) regions 16")
-    val situation = "SELECT * FROM t2 where a>0"
+    val situation = "SELECT * FROM t2 where a>9223372036854775807"
     val df = spark.sql(situation)
-    df.show
-    df.explain(true)
+    df.explain()
   }
 
   // https://github.com/pingcap/tispark/issues/1498

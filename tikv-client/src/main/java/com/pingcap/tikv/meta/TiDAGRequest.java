@@ -71,9 +71,7 @@ import org.tikv.kvproto.Coprocessor;
  */
 public class TiDAGRequest implements Serializable {
 
-  /**
-   * Predefined executor priority map.
-   */
+  /** Predefined executor priority map. */
   private static final Map<ExecType, Integer> EXEC_TYPE_PRIORITY_MAP =
       ImmutableMap.<ExecType, Integer>builder()
           .put(ExecType.TypeTableScan, 0)
@@ -239,8 +237,8 @@ public class TiDAGRequest implements Serializable {
    * Selection > Aggregation > TopN/Limit a DAGRequest must contain one and only one TableScan or
    * IndexScan.
    *
-   * @param buildIndexScan whether the dagRequest to build should be an
-   *                       {@link com.pingcap.tidb.tipb.IndexScan}
+   * @param buildIndexScan whether the dagRequest to build should be an {@link
+   *     com.pingcap.tidb.tipb.IndexScan}
    * @return final DAGRequest built
    */
   private DAGRequest.Builder buildScan(boolean buildIndexScan, List<Integer> outputOffsets) {
@@ -556,8 +554,8 @@ public class TiDAGRequest implements Serializable {
   /**
    * Check if a DAG request is valid.
    *
-   * <p>Note: When constructing a DAG request, a executor with an ExecType of higher priority
-   * should always be placed before those lower ones.
+   * <p>Note: When constructing a DAG request, a executor with an ExecType of higher priority should
+   * always be placed before those lower ones.
    *
    * @param dagRequest Request DAG.
    */
@@ -756,9 +754,7 @@ public class TiDAGRequest implements Serializable {
     return fields;
   }
 
-  /**
-   * Required index columns for double read
-   */
+  /** Required index columns for double read */
   private void addRequiredIndexDataType() {
     if (!tableInfo.isCommonHandle()) {
       indexDataTypes.add(requireNonNull(IntegerType.BIGINT, "dataType is null"));
@@ -934,16 +930,12 @@ public class TiDAGRequest implements Serializable {
     return pushDownType;
   }
 
-  /**
-   * Get the estimated row count will be fetched from this request.
-   */
+  /** Get the estimated row count will be fetched from this request. */
   public double getEstimatedCount() {
     return estimatedCount;
   }
 
-  /**
-   * Set the estimated row count will be fetched from this request.
-   */
+  /** Set the estimated row count will be fetched from this request. */
   public void setEstimatedCount(double estimatedCount) {
     this.estimatedCount = estimatedCount;
   }
@@ -1003,28 +995,32 @@ public class TiDAGRequest implements Serializable {
     }
     sb.append(": { ");
     if (isIndexScan) {
-      sb.append(toIndexScanPhyicalPlan());
+      sb.append(toIndexScanPhysicalPlan());
     } else {
-      sb.append(toTableScanPhyicalPlan());
+      sb.append(toTableScanPhysicalPlan());
     }
     sb.append(" }");
     sb.append(", startTs: ").append(startTs.getVersion());
     return sb.toString();
   }
 
-  private String toIndexScanPhyicalPlan() {
+  private String toIndexScanPhysicalPlan() {
     StringBuilder sb = new StringBuilder();
     sb.append("IndexRangeScan: ");
     sb.append(String.format("[Index: %s ", indexInfo.getName()));
     sb.append("(");
-    List<String> colNames = indexInfo.getIndexColumns().stream().map(TiIndexColumn::getName)
-        .collect(Collectors.toList());
+    List<String> colNames =
+        indexInfo
+            .getIndexColumns()
+            .stream()
+            .map(TiIndexColumn::getName)
+            .collect(Collectors.toList());
     Joiner.on(",").skipNulls().appendTo(sb, colNames);
     sb.append(")]:");
     sb.append(" {");
     TiDAGRequest indexRangeScan = this.copy();
     indexRangeScan.buildIndexScan();
-    indexRangeScan.toPhyicalPlan(sb);
+    indexRangeScan.toPhysicalPlan(sb);
     sb.append(" }");
     if (isDoubleRead()) {
       sb.append(", TableRowIDScan:");
@@ -1032,24 +1028,24 @@ public class TiDAGRequest implements Serializable {
       TiDAGRequest tableRowIDScan = this.copy();
       tableRowIDScan.resetRanges();
       tableRowIDScan.buildTableScan();
-      tableRowIDScan.toPhyicalPlan(sb);
+      tableRowIDScan.toPhysicalPlan(sb);
       sb.append(" }");
     }
     return sb.toString();
   }
 
-  private String toTableScanPhyicalPlan() {
-    StringBuilder sb=new StringBuilder();
+  private String toTableScanPhysicalPlan() {
+    StringBuilder sb = new StringBuilder();
     sb.append("TableRangeScan");
     sb.append(": {");
     TiDAGRequest tableRangeScan = this.copy();
     tableRangeScan.buildTableScan();
-    tableRangeScan.toPhyicalPlan(sb);
+    tableRangeScan.toPhysicalPlan(sb);
     sb.append(" }");
     return sb.toString();
   }
 
-  private void toPhyicalPlan(StringBuilder sb) {
+  private void toPhysicalPlan(StringBuilder sb) {
     if (!getRangesMaps().isEmpty()) {
       sb.append(" KeyRange: {");
       sb.append(" RangeFliter: {");
@@ -1109,7 +1105,6 @@ public class TiDAGRequest implements Serializable {
     return new ArrayList<>();
   }
 
-
   public TiDAGRequest copy() {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1149,9 +1144,7 @@ public class TiDAGRequest implements Serializable {
     }
   }
 
-  /**
-   * Whether we use streaming to push down the request
-   */
+  /** Whether we use streaming to push down the request */
   public enum PushDownType {
     STREAMING,
     NORMAL
