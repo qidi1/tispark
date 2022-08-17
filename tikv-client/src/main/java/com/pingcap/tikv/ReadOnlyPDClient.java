@@ -54,6 +54,8 @@ public interface ReadOnlyPDClient {
 
   Future<TiRegion> getRegionByIDAsync(BackOffer backOffer, long id);
 
+  List<TiRegion> scanRegion(BackOffer backOffer, ByteString startKey, ByteString endKey, int limit);
+
   HostMapping getHostMapping();
 
   /**

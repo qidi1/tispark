@@ -1,5 +1,4 @@
-/*
- * Copyright 2020 PingCAP, Inc.
+/* * Copyright 2020 PingCAP, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +14,8 @@
  */
 
 package com.pingcap.tikv.region;
+
+import org.tikv.kvproto.Metapb.StoreLabel;
 
 public enum TiStoreType {
   TiKV,
@@ -43,5 +44,9 @@ public enum TiStoreType {
 
   public String getLabelValue() {
     return labelValue;
+  }
+
+  public StoreLabel getStoreLable() {
+    return StoreLabel.newBuilder().setKey(labelKey).setValue(labelValue).build();
   }
 }

@@ -262,7 +262,7 @@ public class RangeSplitterTest {
     TLongObjectHashMap<List<Handle>> result = new TLongObjectHashMap<>();
     RangeSplitter.newSplitter(mgr)
         .groupByAndSortHandlesByRegionId(tableId, handles)
-        .forEach((k, v) -> result.put(k.first.getId(), v));
+        .forEach((k, v) -> result.put(k.region.getId(), v));
     assertEquals(2, result.get(0).size());
     assertEquals(10, result.get(1).size());
     assertEquals(2, result.get(2).size());
@@ -282,13 +282,14 @@ public class RangeSplitterTest {
     }
 
     @Override
-    public Pair<TiRegion, Metapb.Store> getRegionStorePairByKey(
+    public RegionStorePair getRegionStorePairByKey(
         ByteString key, TiStoreType storeType, BackOffer backOffer) {
       for (Map.Entry<KeyRange, TiRegion> entry : mockRegionMap.entrySet()) {
         KeyRange range = entry.getKey();
         if (KeyRangeUtils.makeRange(range.getStart(), range.getEnd()).contains(Key.toRawKey(key))) {
           TiRegion region = entry.getValue();
-          return Pair.create(region, Metapb.Store.newBuilder().setId(region.getId()).build());
+          return new RegionStorePair(
+              region, Metapb.Store.newBuilder().setId(region.getId()).build());
         }
       }
       return null;
