@@ -54,7 +54,10 @@ public interface ReadOnlyPDClient {
 
   Future<TiRegion> getRegionByIDAsync(BackOffer backOffer, long id);
 
-  List<TiRegion> scanRegion(BackOffer backOffer, ByteString startKey, ByteString endKey, int limit);
+  // updateCacheInRangeWithLimit gets at most `limit` regions from PD, starts from the region
+  // containing `startKey` and in key order.
+  List<TiRegion> scanRegionWithLimit(
+      BackOffer backOffer, ByteString startKey, ByteString endKey, int limit);
 
   HostMapping getHostMapping();
 

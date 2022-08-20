@@ -39,14 +39,20 @@ public enum TiStoreType {
   }
 
   public String getLabelKey() {
+    if (labelValue == null) {
+      return "";
+    }
     return labelKey;
   }
 
   public String getLabelValue() {
+    if (labelValue == null) {
+      return "";
+    }
     return labelValue;
   }
 
   public StoreLabel getStoreLable() {
-    return StoreLabel.newBuilder().setKey(labelKey).setValue(labelValue).build();
+    return StoreLabel.newBuilder().setKey(getLabelKey()).setValue(getLabelValue()).build();
   }
 }

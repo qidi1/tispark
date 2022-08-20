@@ -129,11 +129,11 @@ public class RegionManager {
     List<RegionStorePair> allRegionStorePairs = new ArrayList<>();
     ByteString startKey = range.getStart();
     ByteString endKey = range.getEnd();
-    while (toRawKey(startKey).compareTo(toRawKey(endKey)) >= 0) {
+    while (toRawKey(startKey).compareTo(toRawKey(endKey)) < 0) {
       try {
         ArrayList<RegionStorePair> regionStorePairs;
-        ArrayList<TiRegion> regions = cache.getRegionsInRangeWithLimit(range, backOffer,
-            REGION_SCAN_LIMIT);
+        ArrayList<TiRegion> regions =
+            cache.getRegionsInRangeWithLimit(range, backOffer, REGION_SCAN_LIMIT);
         regionStorePairs = new ArrayList<>();
         for (TiRegion region : regions) {
           Store store = getStoreInRegionByStoreType(region, storeType, backOffer);
@@ -141,6 +141,7 @@ public class RegionManager {
         }
         allRegionStorePairs.addAll(regionStorePairs);
         startKey = regions.get(regions.size() - 1).getEndKey();
+        range = KeyRange.newBuilder().setStart(startKey).setEnd(endKey).build();
       } catch (Exception e) {
         logger.warn("getAllRegionStorePair error", e);
         backOffer.doBackOff(BackOffFuncType.BoRegionMiss, e);
@@ -149,8 +150,7 @@ public class RegionManager {
     return allRegionStorePairs;
   }
 
-  public Store getStoreInRegionByStoreType(
-      TiRegion region, TiStoreType storeType) {
+  public Store getStoreInRegionByStoreType(TiRegion region, TiStoreType storeType) {
     return getStoreInRegionByStoreType(region, storeType, ConcreteBackOffer.newGetBackOff());
   }
 
@@ -290,7 +290,7 @@ public class RegionManager {
       ByteString startKey = range.getStart();
       ByteString endKey = range.getEnd();
       ArrayList<TiRegion> regionsInRange = new ArrayList<>();
-      while (toRawKey(startKey).compareTo(toRawKey(endKey)) >= 0
+      while (toRawKey(startKey).compareTo(toRawKey(endKey)) < 0
           && regionsInRange.size() < scanLimit) {
 
         TiRegion region = regionCache.get(getEncodedKey(startKey));
@@ -299,8 +299,7 @@ public class RegionManager {
             updateCacheInRangeWithLimit(startKey, endKey, scanLimit, backOffer);
             region = regionCache.get(getEncodedKey(startKey));
             if (region == null) {
-              throw new NullPointerException(
-                  "fail to get region by key " + startKey);
+              throw new NullPointerException("fail to get region by key " + startKey);
             }
           } catch (Exception e) {
             backOffer.doBackOff(BackOffFuncType.BoRegionMiss, e);
@@ -322,18 +321,16 @@ public class RegionManager {
       return true;
     }
 
-    // updateCacheInRangeWithLimit gets at most `limit` regions from PD, starts from the region
-    // containing `startKey` and in key order.
-    // Region which has leader will be inserted into cache.
     private synchronized void updateCacheInRangeWithLimit(
         ByteString startKey, ByteString endKey, int limit, BackOffer backOffer)
         throws GrpcException {
-      List<TiRegion> regions = pdClient.scanRegion(backOffer, startKey, endKey, limit);
+      List<TiRegion> regions = pdClient.scanRegionWithLimit(backOffer, startKey, endKey, limit);
       for (TiRegion region : regions) {
         // Region without leader.
         if (region.getLeader() == null || region.getLeader().getId() == 0) {
           continue;
         }
+        // Region which has leader will be inserted into cache.
         if (!putRegion(region)) {
           throw new TiClientInternalException("Invalid Region: " + region);
         }

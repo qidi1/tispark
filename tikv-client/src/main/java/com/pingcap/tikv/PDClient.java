@@ -297,14 +297,20 @@ public class PDClient extends AbstractGRPCClient<PDBlockingStub, PDStub>
   }
 
   @Override
-  public List<TiRegion> scanRegion(
+  public List<TiRegion> scanRegionWithLimit(
       BackOffer backOffer, ByteString startKey, ByteString endKey, int limit) {
+    CodecDataOutput startCdo = new CodecDataOutput();
+    BytesCodec.writeBytes(startCdo, startKey.toByteArray());
+    ByteString encodeStartKey = startCdo.toByteString();
+    CodecDataOutput endCdo = new CodecDataOutput();
+    BytesCodec.writeBytes(endCdo, endKey.toByteArray());
+    ByteString encodeEndKey = endCdo.toByteString();
     Supplier<ScanRegionsRequest> request =
         () ->
             ScanRegionsRequest.newBuilder()
                 .setHeader(header)
-                .setStartKey(startKey)
-                .setEndKey(endKey)
+                .setStartKey(encodeStartKey)
+                .setEndKey(encodeEndKey)
                 .setLimit(limit)
                 .build();
     PDErrorHandler<ScanRegionsResponse> handler =

@@ -163,8 +163,7 @@ public class RegionStoreClient extends AbstractRegionStoreClient {
               clientBuilder);
 
     } else {
-      Store tikvStore =
-          regionManager.getStoreInRegionByStoreType(region, TiStoreType.TiKV);
+      Store tikvStore = regionManager.getStoreInRegionByStoreType(region, TiStoreType.TiKV);
 
       String addressStr = tikvStore.getAddress();
       if (logger.isDebugEnabled()) {

@@ -294,5 +294,47 @@ public class RangeSplitterTest {
       }
       return null;
     }
+
+    @Override
+    public List<RegionStorePair> getAllRegionStorePairsInRange(
+        KeyRange range, TiStoreType storeType, BackOffer backOffer) {
+      ArrayList<RegionStorePair> regionStorePairArrayList = new ArrayList<>();
+      for (Map.Entry<KeyRange, TiRegion> entry : mockRegionMap.entrySet()) {
+        KeyRange regionRange = entry.getKey();
+        if (this.isRangeOverlap(regionRange, range)) {
+          TiRegion region = entry.getValue();
+          regionStorePairArrayList.add(
+              new RegionStorePair(region, Metapb.Store.newBuilder().setId(region.getId()).build()));
+        }
+      }
+      regionStorePairArrayList.sort(
+          (o1, o2) -> {
+            if (o1.region.getStartKey().isEmpty() && o2.region.getStartKey().isEmpty()) {
+              return 0;
+            }
+            if (o1.region.getStartKey().isEmpty()) {
+              return -1;
+            }
+            if (o2.region.getStartKey().isEmpty()) {
+              return 1;
+            }
+            return Key.toRawKey(o1.region.getStartKey())
+                .compareTo(Key.toRawKey(o2.region.getStartKey()));
+          });
+      return regionStorePairArrayList;
+    }
+
+    public boolean isRangeOverlap(KeyRange range1, KeyRange range2) {
+      boolean isRange1StartKeyBiggerOrEqualThanRange2EndKey =
+          Key.toRawKey(range1.getStart()).compareTo(Key.toRawKey(range2.getEnd())) >= 0
+              && !range2.getEnd().isEmpty()
+              && !range1.getStart().isEmpty();
+      boolean isRange1EndKeySmallerOrEqualThanRange2StartKey =
+          (Key.toRawKey(range1.getEnd()).compareTo(Key.toRawKey(range2.getStart())) <= 0
+                  && !range1.getEnd().isEmpty())
+              || range2.getStart().isEmpty();
+      return !(isRange1EndKeySmallerOrEqualThanRange2StartKey
+          || isRange1StartKeyBiggerOrEqualThanRange2EndKey);
+    }
   }
 }

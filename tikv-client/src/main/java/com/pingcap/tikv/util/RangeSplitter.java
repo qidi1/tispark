@@ -175,9 +175,8 @@ public class RangeSplitter {
     for (KeyRange range : keyRanges) {
       while (true) {
         try {
-          List<RegionStorePair> regionStorePairList = regionManager.getAllRegionStorePairsInRange(
-              range,
-              storeType, bo);
+          List<RegionStorePair> regionStorePairList =
+              regionManager.getAllRegionStorePairsInRange(range, storeType, bo);
           for (RegionStorePair regionStorePair : regionStorePairList) {
             TiRegion region = regionStorePair.region;
             // Add region id to RegionStorePair Map.
@@ -190,7 +189,6 @@ public class RangeSplitter {
           bo.doBackOff(BackOffFuncType.BoRegionMiss, e);
         }
       }
-
     }
     ImmutableList.Builder<RegionTask> resultBuilder = ImmutableList.builder();
     idToRange.forEach(
@@ -201,12 +199,14 @@ public class RangeSplitter {
     return resultBuilder.build();
   }
 
-  private static void extractScanRangeForRegion(Map<Long, List<KeyRange>> idToRange, KeyRange range,
+  private static void extractScanRangeForRegion(
+      Map<Long, List<KeyRange>> idToRange,
+      KeyRange range,
       List<RegionStorePair> regionStorePairList) {
     if (regionStorePairList.size() == 0) {
       throw new TiClientInternalException(
-          String.format("fail to get region/store pairs in [ %s, %s ) ", range.getStart(),
-              range.getEnd()));
+          String.format(
+              "fail to get region/store pairs in [ %s, %s ) ", range.getStart(), range.getEnd()));
     }
 
     // Both key range is close-opened.
@@ -234,8 +234,8 @@ public class RangeSplitter {
       // The region which is the last region will necessarily be covered by the range.
       // So the middle scan range is [ region.getStartKey(), region.getEndKey() ).
       TiRegion region = regionStorePairList.get(i).region;
-      KeyRange midScanRange = KeyRange.newBuilder().setStart(region.getStartKey())
-          .setEnd(region.getEndKey()).build();
+      KeyRange midScanRange =
+          KeyRange.newBuilder().setStart(region.getStartKey()).setEnd(region.getEndKey()).build();
       idToRange.computeIfAbsent(region.getId(), k -> new ArrayList<>()).add(midScanRange);
     }
 
