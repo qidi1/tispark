@@ -333,17 +333,20 @@ public class RegionManagerTest extends PDMockServerTest {
     int leaderStoreId = 1;
     int learnerTiVKStoreId = 2;
     int learnerTiFlashStoreId = 3;
-    Peer leader = Peer.newBuilder().setId(1).setRole(PeerRole.Voter).setStoreId(leaderStoreId)
-        .build();
-    Peer learnerTiKV = Peer.newBuilder().setId(2).setRole(PeerRole.Learner)
-        .setStoreId(learnerTiVKStoreId).build();
+    Peer leader =
+        Peer.newBuilder().setId(1).setRole(PeerRole.Voter).setStoreId(leaderStoreId).build();
+    Peer learnerTiKV =
+        Peer.newBuilder().setId(2).setRole(PeerRole.Learner).setStoreId(learnerTiVKStoreId).build();
     Peer learnerTiFlash =
-        Peer.newBuilder().setId(3).setRole(PeerRole.Learner).setStoreId(learnerTiFlashStoreId)
+        Peer.newBuilder()
+            .setId(3)
+            .setRole(PeerRole.Learner)
+            .setStoreId(learnerTiFlashStoreId)
             .build();
     Metapb.Region region =
         Metapb.Region.newBuilder()
-            .setStartKey(GrpcUtils.encodeKey(new byte[]{0}))
-            .setEndKey(GrpcUtils.encodeKey(new byte[]{5}))
+            .setStartKey(GrpcUtils.encodeKey(new byte[] {0}))
+            .setEndKey(GrpcUtils.encodeKey(new byte[] {5}))
             .addPeers(leader)
             .addPeers(learnerTiKV)
             .addPeers(learnerTiFlash)
@@ -354,13 +357,12 @@ public class RegionManagerTest extends PDMockServerTest {
         GrpcUtils.makeGetStoreResponse(
             pdServer.getClusterId(),
             GrpcUtils.makeStore(
-                leaderStoreId,
-                testAddress,
-                StoreState.Up,
-                TiStoreType.TiKV.getStoreLable()
-            )
-        )
-    );
+                leaderStoreId, testAddress, StoreState.Up, TiStoreType.TiKV.getStoreLable())));
+    pdServer.addGetStoreResp(
+        GrpcUtils.makeGetStoreResponse(
+            pdServer.getClusterId(),
+            GrpcUtils.makeStore(
+                learnerTiVKStoreId, testAddress, StoreState.Up, TiStoreType.TiKV.getStoreLable())));
     pdServer.addGetStoreResp(
         GrpcUtils.makeGetStoreResponse(
             pdServer.getClusterId(),
@@ -368,25 +370,11 @@ public class RegionManagerTest extends PDMockServerTest {
                 learnerTiVKStoreId,
                 testAddress,
                 StoreState.Up,
-                TiStoreType.TiKV.getStoreLable()
-            )
-        )
-    );
-    pdServer.addGetStoreResp(
-        GrpcUtils.makeGetStoreResponse(
-            pdServer.getClusterId(),
-            GrpcUtils.makeStore(
-                learnerTiVKStoreId,
-                testAddress,
-                StoreState.Up,
-                TiStoreType.TiFlash.getStoreLable()
-            )
-        )
-    );
-    assertEquals(mgr.getStoreInRegionByStoreType(tiRegion,
-        TiStoreType.TiKV).getId(), leaderStoreId);
-    assertEquals(mgr.getStoreInRegionByStoreType(tiRegion,
-        TiStoreType.TiKV).getId(), leaderStoreId);
+                TiStoreType.TiFlash.getStoreLable())));
+    assertEquals(
+        mgr.getStoreInRegionByStoreType(tiRegion, TiStoreType.TiKV).getId(), leaderStoreId);
+    assertEquals(
+        mgr.getStoreInRegionByStoreType(tiRegion, TiStoreType.TiKV).getId(), leaderStoreId);
   }
 
   @Test
@@ -394,17 +382,20 @@ public class RegionManagerTest extends PDMockServerTest {
     int leaderStoreId = 1;
     int learnerTiVKStoreId = 2;
     int learnerTiFlashStoreId = 3;
-    Peer leader = Peer.newBuilder().setId(1).setRole(PeerRole.Voter).setStoreId(leaderStoreId)
-        .build();
-    Peer learnerTiKV = Peer.newBuilder().setId(2).setRole(PeerRole.Learner)
-        .setStoreId(learnerTiVKStoreId).build();
+    Peer leader =
+        Peer.newBuilder().setId(1).setRole(PeerRole.Voter).setStoreId(leaderStoreId).build();
+    Peer learnerTiKV =
+        Peer.newBuilder().setId(2).setRole(PeerRole.Learner).setStoreId(learnerTiVKStoreId).build();
     Peer learnerTiFlash =
-        Peer.newBuilder().setId(3).setRole(PeerRole.Learner).setStoreId(learnerTiFlashStoreId)
+        Peer.newBuilder()
+            .setId(3)
+            .setRole(PeerRole.Learner)
+            .setStoreId(learnerTiFlashStoreId)
             .build();
     Metapb.Region region =
         Metapb.Region.newBuilder()
-            .setStartKey(GrpcUtils.encodeKey(new byte[]{0}))
-            .setEndKey(GrpcUtils.encodeKey(new byte[]{5}))
+            .setStartKey(GrpcUtils.encodeKey(new byte[] {0}))
+            .setEndKey(GrpcUtils.encodeKey(new byte[] {5}))
             .addPeers(leader)
             .addPeers(learnerTiKV)
             .addPeers(learnerTiFlash)
@@ -415,24 +406,12 @@ public class RegionManagerTest extends PDMockServerTest {
         GrpcUtils.makeGetStoreResponse(
             pdServer.getClusterId(),
             GrpcUtils.makeStore(
-                leaderStoreId,
-                testAddress,
-                StoreState.Up,
-                TiStoreType.TiKV.getStoreLable()
-            )
-        )
-    );
+                leaderStoreId, testAddress, StoreState.Up, TiStoreType.TiKV.getStoreLable())));
     pdServer.addGetStoreResp(
         GrpcUtils.makeGetStoreResponse(
             pdServer.getClusterId(),
             GrpcUtils.makeStore(
-                learnerTiVKStoreId,
-                testAddress,
-                StoreState.Up,
-                TiStoreType.TiKV.getStoreLable()
-            )
-        )
-    );
+                learnerTiVKStoreId, testAddress, StoreState.Up, TiStoreType.TiKV.getStoreLable())));
     try {
       mgr.getStoreInRegionByStoreType(tiRegion, TiStoreType.TiFlash);
       fail();
